@@ -195,7 +195,7 @@ deaths <- covid_latest %>%
 glimpse(deaths)
 ```
 
-Finally, we choose which countries we wish to plot, and filter our `deaths` dataset by these. We have elected to use all of the countries presented the in example, as well as Australia and Germany.
+Finally, we choose which countries we wish to plot, and filter our `deaths` dataset by these. We have elected to use all of the countries presented the in example, as well as Australia and Germany. We cast the country names to be a categorical `factor` ordered by the death rate in each country.
 
 ```{r}
 countries <- c( "Australia", "Belgium", "Spain", "Italy", "France",
@@ -208,9 +208,9 @@ deaths_subset <- deaths %>%
                           levels = arrange(., Deaths_per_100k)$Country))
 ```
 
-We are now able to reproduce the plot:
+We are now able to reproduce the plot (Figure \@ref(fig:reproduction)):
 
-```{r}
+```{r reproduction, fig.height=4, fig.width=4.5, out.width="70%", attr.source='.numberLines', fig.cap="\\texttt{ggplot2} reproduction of the example plot."}
 ggplot(deaths_subset, aes(Deaths_per_100k, Country)) +
   geom_bar(stat = "identity", width = 0.6, fill = "deepskyblue4") +
   labs(x = NULL, y = NULL,
@@ -220,9 +220,7 @@ ggplot(deaths_subset, aes(Deaths_per_100k, Country)) +
   theme_minimal() +
   theme(axis.text.y = element_text(hjust = 0),
         axis.line.y.left = element_line(colour = "black"),
-        axis.text.x.top = element_text(),
         panel.grid.major.y = element_blank(),
-        panel.grid.major.x = element_line(size = 1, colour = "grey"),
         plot.caption = element_text(hjust = 0, colour = "slategrey"),
         plot.caption.position = "plot",
         plot.title.position = "plot") +
@@ -231,6 +229,29 @@ ggplot(deaths_subset, aes(Deaths_per_100k, Country)) +
                      position = "top",
                      expand = c(0, 0))
 ```
+
+Interpreting the `R` code line by line:
+
+1. `ggplot` our dataset. Map the x and y aesthetics to the deaths per 100,000 (continuous) and country (categorical) respectively.
+2. Add a barplot geometry. Use the "identity" statistic as we have pre-summarised our data by summing the deatgs by country. Match the example bar fill colour and increase the vertical space between each bar.
+3. Remove the x- and y-axis lables to match the example.
+4. Set title.
+5. Set subtitle
+6. Set caption for sources.
+7. Use `theme_minimal` to remove most of `ggplot`'s defauly styling.
+8. Begin setting our own theme. Left-align the country lables.
+9. Make the left plot border black, to match the example.
+10. Remove vertical grid lines.
+11. Left-align the source caption and set its colour to match the example.
+12. Align the source caption to the plot boundary, instead of the default data panel boundary.
+13. Align the title and subtitle to the plot boundary, instead of the default data panel boundary.
+14. Set the x-axis ticks and grid to match the example - in 10s from 0 to 60.
+15. Remove x-axis minor ticks and grid, so that there are no ticks between the 10s.
+16. Move the x-axis text to the top of the panel to match the example.
+17. Remove padding around the data plot area.
+
+We note small remaining discrepencies between the example plot and the reproduction at Figure \@ref(fig:reproduction). Most noteably, we have used a different population dataset from the example plot authors, and therefore the final mortality rate is slightly different for most countries. This is only particularly obvious for Ireland and Sweden, which have transposed their rankings in the reproduced plot.
+
 
 
 
