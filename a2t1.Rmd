@@ -1,0 +1,144 @@
+---
+title: "Untitled"
+author: "Your name"
+date: 
+output:
+  bookdown::pdf_document2:
+    toc: TRUE
+    number_sections: FALSE
+  bookdown::html_document2: 
+documentclass: article
+classoption: a4paper
+header-includes:
+  - \usepackage[margin = 8pt]{subfig}
+  - \captionsetup[figure]{labelfont={bf},textfont={it}}
+  - \captionsetup[table]{labelfont={bf},textfont={it}}
+  - \usepackage[a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.align = "center")
+```
+
+# Preamble
+
+```{r preamble-packages}
+library(tidyverse)
+```
+
+```{r, echo = FALSE}
+nicetab <- partial(knitr::kable,
+                   linesep = "",
+                   digits = 3,
+                   booktabs = TRUE)
+```
+
+# Question 1
+
+## (a)
+
+```{bash}
+
+```
+
+# Question 2
+
+## (a)
+
+Download the database dump tarball:
+
+```{bash}
+curl -o world_x-db.tar.gz https://downloads.mysql.com/docs/world_x-db.tar.gz
+```
+
+
+
+Extract the tarball contents:
+
+```{bash}
+tar -xzvf world_x-db.tar.gz
+```
+
+Here,  `-x` is to to specify the extraction operation; `-z` specifies that the tarball is compressed with `gzip`; `-v` asks for verbose output and `-f` specifies the path to the tarball.
+
+Since the data dump contains the SQL statements required to create the world_x database and its tables, we can use it as input to the `mysql` shell. Load the data dump as the superuser, and then grant access to our existing (less priviliged) user `awkologist`:
+
+```{bash eval=FALSE}
+sudo mysql < world_x-db/world_x.sql
+sudo mysql world_x -e 'GRANT ALL ON world_x TO "awkologist" IDENTIFIED BY "awkology";'
+```
+
+Now as `awkologist`, verify that the new database exists and list its tables:
+
+```{bash eval = FALSE}
+mysql -u awkologist -p world_x -e "SHOW TABLES;"
+```
+
+````
+## Enter password: 
+## +-------------------+
+## | Tables_in_world_x |
+## +-------------------+
+## | city              |
+## | country           |
+## | countryinfo       |
+## | countrylanguage   |
+## +-------------------+
+````
+
+## (b)
+
+By examining the `CREATE TABLE` statements in the SQL data dump for `world_x` and by running `DESCRIBE` for each table, we can derive the relationships between the tables. These are represented graphically at Figure \@ref(fig:uml). Interestingly, `countryLanguage` has a compound primary key.
+
+
+```{r uml, out.width="70%", echo = FALSE, fig.cap="UML graphical representation of \\texttt{world\\_x} database structure, excluding the JSON table \\texttt{countryinfo}."}
+knitr::include_graphics("UML.pdf")
+```
+
+Since our class of interest for answering the question is `country`, we can peform a three-way inner join to combine all three tables. The `country.Code` $\leftrightarrow$ `city.CountryCode` foreign key relationship is not required to solve the problem; however, we do need the `country.Code` $\leftrightarrow$ `countryLanguage.CountryCode` and the `country.Capital` $\leftrightarrow$ `city.ID` foreign key relationships.
+
+Once we have the joined table, we filter by a `WHERE` clause with the conditions that `countryLanguage.Language` is `English` and the `countryLanguage.Percentage` is over 50.
+
+With that in mind, we formulate the following query and execute it against our database `world_x`:
+
+```{sql eval = FALSE}
+SELECT
+  c.Name Country,
+  l.Percentage,
+  a.Name Capital
+FROM countrylanguage l
+INNER JOIN country c ON l.CountryCode = c.Code
+INNER JOIN city a ON c.Capital = a.ID
+WHERE
+  l.Language = "English"
+  AND l.Percentage > 50;
+```
+
+which yields the following result:
+
+````
++----------------------+------------+------------------+
+| Country              | Percentage | Capital          |
++----------------------+------------+------------------+
+| Australia            |       81.2 | Canberra         |
+| Belize               |       50.8 | Belmopan         |
+| Bermuda              |      100.0 | Hamilton         |
+| Canada               |       60.4 | Ottawa           |
+| United Kingdom       |       97.3 | London           |
+| Gibraltar            |       88.9 | Gibraltar        |
+| Ireland              |       98.4 | Dublin           |
+| New Zealand          |       87.0 | Wellington       |
+| Trinidad and Tobago  |       93.5 | Port-of-Spain    |
+| United States        |       86.2 | Washington       |
+| Virgin Islands, U.S. |       81.7 | Charlotte Amalie |
++----------------------+------------+------------------+
+````
+
+# Question 3
+
+```{r eval = TRUE}
+```
+
