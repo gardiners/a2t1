@@ -2,3 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+*.gz
+a2t1_cache/
+a2t1_files/
+world_x-db
+busa8090_a2t1_2020s1.pdf
+desktop.ini
