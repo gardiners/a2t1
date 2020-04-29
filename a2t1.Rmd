@@ -1,7 +1,7 @@
 ---
-title: "Untitled"
-author: "Your name"
-date: 
+title: "BUSA8090 A2T1"
+author: "Samuel Gardiner - 44952619"
+date: "29 April 2020"
 output:
   bookdown::pdf_document2:
     toc: FALSE
@@ -13,9 +13,16 @@ header-includes:
   - \usepackage[margin = 8pt]{subfig}
   - \captionsetup[figure]{labelfont={bf},textfont={it}}
   - \captionsetup[table]{labelfont={bf},textfont={it}}
-  - \usepackage[a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+  - \usepackage[a4paper,left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+  - \usepackage{tcolorbox}
 bibliography: references.bib
 ---
+
+\newtcolorbox{markbox}{
+  colframe=black,
+  colback=white,
+  boxsep=5pt,
+  arc=1pt}
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
@@ -24,16 +31,24 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center")
 ```
 
+::: {.markbox data-latex=""}
+
 # Note to the marker:
 
+All source code, text, figures and data for this project are contained within the GitHub repo at https://github.com/gardiners/a2t1. To get a copy of all of the scripts for marking, please run the following on your AWS Ubuntu server:
 
+```{bash eval = FALSE}
+git clone https://github.com/gardiners/a2t1 gardiners-a2t1
+cd gardiners-a2t1
+```
 
+:::
 
 # Question 1
 
 ## (a)
 
-We have existing tab-delimeted data in `expression.tsv`. We can solve the question with an `awk` one-liner:
+We have existing tab-delimited data in `expression.tsv`. We can solve the question with an `awk` one-liner:
 
 ```{bash eval = FALSE}
 awk '$2 < 1000' expression.tsv
@@ -47,9 +62,13 @@ alr4851	633
 ````
 As explained by @Wunschiers2013 \S 13.4.4, `awk` can perform numeric comparison on number fields. We have simply asked `awk` to compare the second field `$2` (expression value) in each row  to 1000, and to output the rows where the inequality is true. We do not need to explicitly print the matching lines as this is `awk`'s default behaviour.
 
+::: {.markbox data-latex=""}
+A script for marking (`q1a.sh`) is available from the project GitHub repo at https://raw.githubusercontent.com/gardiners/a2t1/master/q1a.sh
+:::
+
 ## (b)
 
-We have exisiting data `annotation.tsv`. We can answer the question with an `awk` one-liner:
+We have existing data `annotation.tsv`. We can answer the question with an `awk` one-liner:
 
 ```{bash eval = FALSE}
 awk -F $'\t' '$2 ~ /ase/' annotation.tsv
@@ -66,7 +85,11 @@ alr4851	preprotein translocase subunit	Protein and peptide secretion
 alr5000	CTP synthetase	Pyrimidine biosynthesis
 ````
 
-Here `-F $'\t'` ensures that `awk` uses the tab character as the delimeter, as several of our `function` values have space characers in them. The `awk` expression `'$2 ~ /ase/'` applies the regular expression `ase` to the second field (`function`), as described by @Wunschiers2013 \S 13.4.1 . All matching lines are returned as output.
+Here `-F $'\t'` ensures that `awk` uses the tab character as the delimiter, as several of our `function` values have space characters in them. The `awk` expression `'$2 ~ /ase/'` applies the regular expression `ase` to the second field (`function`), as described by @Wunschiers2013 \S 13.4.1 . All matching lines are returned as output.
+
+::: {.markbox data-latex=""}
+A script for marking (`q2b.sh`) is available at https://raw.githubusercontent.com/gardiners/a2t1/master/q1b.sh
+:::
 
 ## (c)
 
@@ -79,7 +102,11 @@ alr3395	adenylosuccinate lyase	Purine biosynthesis
 alr5000	CTP synthetase	Pyrimidine biosynthesis
 ````
 
-Again, `-F $'\t'` ensures that `awk` uses the tab character as the delimeter. This time the regular expression is matched against the third field (annotation). The regex matches either of two sequences enclosed by the parentheses.
+Again, `-F $'\t'` ensures that `awk` uses the tab character as the delimiter. This time the regular expression is matched against the third field (annotation). The regex matches either of two sequences enclosed by the parentheses.
+
+::: {.markbox data-latex=""}
+A script for marking (`q1c.sh`) is available at https://raw.githubusercontent.com/gardiners/a2t1/master/q1c.sh
+:::
 
 # Question 2
 
@@ -91,8 +118,6 @@ Download the database dump tarball:
 curl -o world_x-db.tar.gz https://downloads.mysql.com/docs/world_x-db.tar.gz
 ```
 
-
-
 Extract the tarball contents:
 
 ```{bash}
@@ -101,7 +126,7 @@ tar -xzvf world_x-db.tar.gz
 
 Here,  `-x` is to to specify the extraction operation; `-z` specifies that the tarball is compressed with `gzip`; `-v` asks for verbose output and `-f` specifies the path to the tarball.
 
-Since the data dump contains the SQL statements required to create the world_x database and its tables, we can use it as input to the `mysql` shell. Load the data dump as the superuser, and then grant access to our existing (less priviliged) user `awkologist`:
+Since the data dump contains the SQL statements required to create the world_x database and its tables, we can use it as input to the `mysql` shell. Load the data dump as the superuser, and then grant access to our existing (less privileged) user `awkologist`:
 
 ```{bash eval=FALSE}
 sudo mysql < world_x-db/world_x.sql
@@ -126,16 +151,20 @@ mysql -u awkologist -p world_x -e "SHOW TABLES;"
 ## +-------------------+
 ````
 
+::: {.markbox data-latex=""}
+A script for marking (`q2a.sh`) that performs all of these steps is available at https://raw.githubusercontent.com/gardiners/a2t1/master/q2a.sh
+:::
+
 ## (b)
 
-By examining the `CREATE TABLE` statements in the SQL data dump for `world_x` and by running `DESCRIBE` for each table, we can derive the relationships between the tables. These are represented graphically at Figure \@ref(fig:uml). Interestingly, `countryLanguage` has a compound primary key.
+By examining the `CREATE TABLE` statements in the SQL data dump for `world_x` and by running `DESCRIBE` for each table, we can derive the relationships between the tables. These are represented graphically at Figure \@ref(fig:uml). Interestingly, `countryLanguage` has a compound primary key, although we do not need to make use of this fact to answer the question.
 
 
 ```{r uml, out.width="70%", echo = FALSE, fig.cap="UML graphical representation of \\texttt{world\\_x} database structure, excluding the JSON table \\texttt{countryinfo}."}
 knitr::include_graphics("UML.pdf")
 ```
 
-Since our class of interest for answering the question is `country`, we can peform a three-way inner join to combine all three tables. The `country.Code` $\leftrightarrow$ `city.CountryCode` foreign key relationship is not required to solve the problem; however, we do need the `country.Code` $\leftrightarrow$ `countryLanguage.CountryCode` and the `country.Capital` $\leftrightarrow$ `city.ID` foreign key relationships.
+Since our class of interest for answering the question is `country`, we can perform a three-way inner join to combine all three tables. The `country.Code` $\leftrightarrow$ `city.CountryCode` foreign key relationship is not required to solve the problem; however, we do need the `country.Code` $\leftrightarrow$ `countryLanguage.CountryCode` and the `country.Capital` $\leftrightarrow$ `city.ID` foreign key relationships.
 
 Once we have the joined table, we filter by a `WHERE` clause with the conditions that `countryLanguage.Language` is `English` and the `countryLanguage.Percentage` is over 50.
 
@@ -173,6 +202,10 @@ which yields the following result:
 | Virgin Islands, U.S. |       81.7 | Charlotte Amalie |
 +----------------------+------------+------------------+
 ````
+
+::: {.markbox data-latex=""}
+A script for marking (`q2b.sh`) which prints the query and then executes it against the `world_x` database is available at https://github.com/gardiners/a2t1/blob/master/q2b.sh
+:::
 
 # Question 3
 
@@ -212,7 +245,7 @@ To prepare the World Bank data, we retain only the latest population data for ea
 
 ```{r}
 pop_latest <- pop %>%               
-  group_by(`Country Code`) %>%       # Retain only the largest year's data
+  group_by(`Country Code`) %>%       # Retain only the latest year's data
   top_n(1, Year)                     # for each country in the dataset.
 
 glimpse(pop_latest)                  # Examine.
@@ -222,13 +255,15 @@ Having prepared our datasets, we can join them. We perform a left join on the JH
 
 ```{r}
 deaths <- covid_latest %>%
-  left_join(pop_latest, by = c("Country" = "Country Name")) %>% # Join on country name
+  # Join on country name:
+  left_join(pop_latest, by = c("Country" = "Country Name")) %>% 
+  # Rename variables for easy plotting, and compute death rate
   transmute(Country = Country,
             Deaths = n,
             Population = Value,
             Deaths_per_100k = Deaths / Population * 1e5)
 
-glimpse(deaths)
+glimpse(deaths) # Examine
 ```
 
 Finally, we choose which countries we wish to plot, and filter our `deaths` dataset by these. We have elected to use all of the countries presented the in example, as well as Australia and Germany. We cast the country names to be a categorical `factor` ordered by the death rate in each country.
@@ -268,14 +303,14 @@ ggplot(deaths_subset, aes(Deaths_per_100k, Country)) +
 
 Interpreting the `R` code line by line:
 
-1. `ggplot` our dataset. Map the x and y aesthetics to the deaths per 100,000 (continuous) and country (categorical) respectively.
-2. Add a barplot geometry. Use the "identity" statistic as we have pre-summarised our data by summing the deatgs by country. Match the example bar fill colour and increase the vertical space between each bar.
-3. Remove the x- and y-axis lables to match the example.
+1. `ggplot` our dataset. Map the x and y aesthetics to the deaths per 100,000 (continuous) and country (categorical) respectively. This only works for recent versions of `ggplot2` - previously `coord_flip` was required to make horizontal bar charts.
+2. Add a barplot geometry. Use the "identity" statistic as we have pre-summarised our data by summing the deaths by country. Match the example bar fill colour and increase the vertical space between each bar.
+3. Remove the x- and y-axis labels to match the example.
 4. Set title.
 5. Set subtitle
 6. Set caption for sources.
-7. Use `theme_minimal` to remove most of `ggplot`'s defauly styling.
-8. Begin setting our own theme. Left-align the country lables.
+7. Use `theme_minimal` to remove most of `ggplot`'s default styling.
+8. Begin setting our own theme. Left-align the country labels.
 9. Make the left plot border black, to match the example.
 10. Remove vertical grid lines.
 11. Left-align the source caption and set its colour to match the example.
@@ -286,7 +321,13 @@ Interpreting the `R` code line by line:
 16. Move the x-axis text to the top of the panel to match the example.
 17. Remove padding around the data plot area.
 
-We note small remaining discrepencies between the example plot and the reproduction at Figure \@ref(fig:reproduction). Most noteably, we have used a different population dataset from the example plot authors, and therefore the final mortality rate is slightly different for most countries. This is only particularly obvious for Ireland and Sweden, which have had their rankings transposed in the reproduced plot.
+We note small remaining discrepancies between the example plot and the reproduction at Figure \@ref(fig:reproduction). Most notably, we have used a different population dataset from the example plot authors, and therefore the final mortality rate is slightly different for most countries. This is only particularly obvious for Ireland and Sweden, which have had their rankings transposed in the reproduced plot.
+
+::: {.markbox data-latex=""}
+For marking, please see the `R` script `q3.R` at https://raw.githubusercontent.com/gardiners/a2t1/master/q3.R
+
+For the best experience, open the script in RStudio on your local machine and run each line, step-by-step, with Ctrl-Enter.
+:::
 
 # References
 
