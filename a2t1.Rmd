@@ -14,6 +14,7 @@ header-includes:
   - \captionsetup[figure]{labelfont={bf},textfont={it}}
   - \captionsetup[table]{labelfont={bf},textfont={it}}
   - \usepackage[a4paper,left=3cm,right=3cm,top=3cm,bottom=3cm]{geometry}
+bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -139,6 +140,99 @@ which yields the following result:
 
 # Question 3
 
-```{r eval = TRUE}
+To reproduce the plot we require information on COVID-19 deaths, and information on country populations. For the former, Johns Hopkins University publish daily COVID-19 case and mortality data [@Dong2020], available on GitHub at https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv. For the latter, the the World Bank Development Indicator estimates [@WorldBank2020] are available on GitHub at https://github.com/datasets/population.
+
+We load `ggplot` and the rest of the `tidyverse`
+
+```{r}
+library(tidyverse)
 ```
+
+then obtain the data:
+
+```{r popdata, cache = TRUE}
+# Read the World Bank population dataset:
+pop <- read_csv("https://raw.githubusercontent.com/datasets/population/master/data/population.csv")
+
+# Read the JHU COVID-19 deaths dataset.
+covid_wide <- read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")
+```
+
+
+Some cleaning is required: we choose to examine only the 25 April 2020 death data from JHU (to match the example plot), and to combine the sub-region death totals per country (ie combine states and provinces so that we have only a country total).
+
+```{r}
+covid_latest <- covid_wide %>%
+  select(Country = `Country/Region`,  # Rename variables to meet R conventions.
+         Region = `Province/State`,
+         Deaths = `4/25/20`) %>%      # Select only today's totals column.
+  group_by(Country) %>%               # Aggregate over entire countries.
+  summarise(n = sum(Deaths))
+
+glimpse(covid_latest)                 # Examine.
+```
+
+To prepare the World Bank data, we retain only the latest population data for each country.
+
+```{r}
+pop_latest <- pop %>%               
+  group_by(`Country Code`) %>%       # Retain only the largest year's data
+  top_n(1, Year)                     # for each country in the dataset.
+
+glimpse(pop_latest)                  # Examine.
+```
+
+Having prepared our datasets, we can join them. We perform a left join on the JHU COVID-10 dataset, so we only preserve country population data for countries which have COVID-19 death data - this eliminates the country groups and leagues from the World Bank dataset. We compute the deaths per 100,000 population.
+
+```{r}
+deaths <- covid_latest %>%
+  left_join(pop_latest, by = c("Country" = "Country Name")) %>% # Join on country name
+  transmute(Country = Country,
+            Deaths = n,
+            Population = Value,
+            Deaths_per_100k = Deaths / Population * 1e5)
+
+glimpse(deaths)
+```
+
+Finally, we choose which countries we wish to plot, and filter our `deaths` dataset by these. We have elected to use all of the countries presented the in example, as well as Australia and Germany.
+
+```{r}
+countries <- c( "Australia", "Belgium", "Spain", "Italy", "France",
+                "Netherlands", "Sweden", "Ireland", "Switzerland",
+                "Portugal", "Denmark", "Germany", "Austria")
+
+deaths_subset <- deaths %>%
+  filter(Country %in% countries) %>%
+  mutate(Country = factor(Country,
+                          levels = arrange(., Deaths_per_100k)$Country))
+```
+
+We are now able to reproduce the plot:
+
+```{r}
+ggplot(deaths_subset, aes(Deaths_per_100k, Country)) +
+  geom_bar(stat = "identity", width = 0.6, fill = "deepskyblue4") +
+  labs(x = NULL, y = NULL,
+       title = "German efficiency\nCovid-19 deaths per 100,000 population",
+       subtitle = "Selected European countries and Australia, to April 25th 2020",
+       caption = "Sources: Johns Hopkins University; World Bank") +
+  theme_minimal() +
+  theme(axis.text.y = element_text(hjust = 0),
+        axis.line.y.left = element_line(colour = "black"),
+        axis.text.x.top = element_text(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line(size = 1, colour = "grey"),
+        plot.caption = element_text(hjust = 0, colour = "slategrey"),
+        plot.caption.position = "plot",
+        plot.title.position = "plot") +
+  scale_x_continuous(breaks = seq(0, 60, 10),
+                     minor_breaks = NULL,
+                     position = "top",
+                     expand = c(0, 0))
+```
+
+
+
+# References
 
