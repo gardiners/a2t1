@@ -4,7 +4,7 @@ author: "Your name"
 date: 
 output:
   bookdown::pdf_document2:
-    toc: TRUE
+    toc: FALSE
     number_sections: FALSE
   bookdown::html_document2: 
 documentclass: article
@@ -24,26 +24,62 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.align = "center")
 ```
 
-# Preamble
+# Note to the marker:
 
-```{r preamble-packages}
-library(tidyverse)
-```
 
-```{r, echo = FALSE}
-nicetab <- partial(knitr::kable,
-                   linesep = "",
-                   digits = 3,
-                   booktabs = TRUE)
-```
+
 
 # Question 1
 
 ## (a)
 
-```{bash}
+We have existing tab-delimeted data in `expression.tsv`. We can solve the question with an `awk` one-liner:
 
+```{bash eval = FALSE}
+awk '$2 < 1000' expression.tsv
 ```
+
+which yields
+
+````
+alr4392	729
+alr4851	633
+````
+As explained by @Wunschiers2013 \S 13.4.4, `awk` can perform numeric comparison on number fields. We have simply asked `awk` to compare the second field `$2` (expression value) in each row  to 1000, and to output the rows where the inequality is true. We do not need to explicitly print the matching lines as this is `awk`'s default behaviour.
+
+## (b)
+
+We have exisiting data `annotation.tsv`. We can answer the question with an `awk` one-liner:
+
+```{bash eval = FALSE}
+awk -F $'\t' '$2 ~ /ase/' annotation.tsv
+```
+
+which returns
+
+````
+all3556	succinate-dehydrogenase	TCA cycle
+alr1207	uridylate kinase	Pyrimidine biosynthesis
+alr2938	iron superoxide dismutase	Detoxification
+alr3395	adenylosuccinate lyase	Purine biosynthesis
+alr4851	preprotein translocase subunit	Protein and peptide secretion
+alr5000	CTP synthetase	Pyrimidine biosynthesis
+````
+
+Here `-F $'\t'` ensures that `awk` uses the tab character as the delimeter, as several of our `function` values have space characers in them. The `awk` expression `'$2 ~ /ase/'` applies the regular expression `ase` to the second field (`function`), as described by @Wunschiers2013 \S 13.4.1 . All matching lines are returned as output.
+
+## (c)
+
+```{bash eval = FALSE}
+awk -F $'\t' '$3 ~ /(Purine biosynthesis)|(Pyrimidine biosynthesis)/' annotation.tsv
+```
+````
+alr1207	uridylate kinase	Pyrimidine biosynthesis
+alr3395	adenylosuccinate lyase	Purine biosynthesis
+alr5000	CTP synthetase	Pyrimidine biosynthesis
+````
+
+Again, `-F $'\t'` ensures that `awk` uses the tab character as the delimeter. This time the regular expression is matched against the third field (annotation). The regex matches either of two sequences enclosed by the parentheses.
 
 # Question 2
 
@@ -250,10 +286,7 @@ Interpreting the `R` code line by line:
 16. Move the x-axis text to the top of the panel to match the example.
 17. Remove padding around the data plot area.
 
-We note small remaining discrepencies between the example plot and the reproduction at Figure \@ref(fig:reproduction). Most noteably, we have used a different population dataset from the example plot authors, and therefore the final mortality rate is slightly different for most countries. This is only particularly obvious for Ireland and Sweden, which have transposed their rankings in the reproduced plot.
-
-
-
+We note small remaining discrepencies between the example plot and the reproduction at Figure \@ref(fig:reproduction). Most noteably, we have used a different population dataset from the example plot authors, and therefore the final mortality rate is slightly different for most countries. This is only particularly obvious for Ireland and Sweden, which have had their rankings transposed in the reproduced plot.
 
 # References
 
