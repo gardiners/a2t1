@@ -204,7 +204,7 @@ which yields the following result:
 ````
 
 ::: {.markbox data-latex=""}
-A script for marking (`q2b.sh`) which prints the query and then executes it against the `world_x` database is available at https://github.com/gardiners/a2t1/blob/master/q2b.sh
+A script for marking (`q2b.sh`) which prints the query and then executes it against the `world_x` database is available at https://raw.githubusercontent.com/gardiners/a2t1/master/q2b.sh
 :::
 
 # Question 3
@@ -326,7 +326,7 @@ We note small remaining discrepancies between the example plot and the reproduct
 ::: {.markbox data-latex=""}
 For marking, please see the `R` script `q3.R` at https://raw.githubusercontent.com/gardiners/a2t1/master/q3.R
 
-For the best experience, open the script in RStudio on your local machine and run each line, step-by-step, with Ctrl-Enter.
+For the best experience, open the script in RStudio on your local machine and run each line, step-by-step, with Ctrl-Enter or Ctrl-R.
 :::
 
 # References
